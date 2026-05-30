@@ -1,0 +1,187 @@
+:root {
+  --primaire: #4f46e5;
+  --primaire-fonce: #4338ca;
+  --primaire-clair: #eef2ff;
+  --fond: #f5f6fa;
+  --carte: #ffffff;
+  --bordure: #e5e7eb;
+  --texte: #1f2937;
+  --texte-doux: #6b7280;
+  --succes: #059669;
+  --danger: #dc2626;
+  --avertissement: #b45309;
+  --rayon: 10px;
+  --ombre: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --police: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--police);
+  color: var(--texte);
+  background: var(--fond);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+h1 { font-size: 26px; margin: 0 0 4px; }
+h2 { font-size: 20px; margin: 0 0 12px; }
+h3 { font-size: 16px; margin: 0 0 8px; }
+a { color: var(--primaire); text-decoration: none; }
+
+.barre {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: var(--carte);
+  border-bottom: 1px solid var(--bordure);
+  padding: 0 24px;
+  height: 60px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.logo { font-size: 20px; font-weight: 700; color: var(--texte); }
+.logo span { color: var(--primaire); }
+.logo-grand { font-size: 30px; }
+
+.nav { display: flex; gap: 4px; flex: 1; }
+.nav a {
+  padding: 8px 14px;
+  border-radius: 8px;
+  color: var(--texte-doux);
+  font-weight: 500;
+}
+.nav a:hover { background: var(--fond); color: var(--texte); }
+.nav a.actif { background: var(--primaire-clair); color: var(--primaire); }
+
+.utilisateur { display: flex; align-items: center; gap: 12px; font-size: 14px; }
+.badge-role {
+  background: var(--primaire-clair);
+  color: var(--primaire);
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.contenu { max-width: 1100px; margin: 0 auto; padding: 28px 24px; }
+.intro { color: var(--texte-doux); margin-bottom: 20px; }
+.centre {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--texte-doux);
+}
+
+button { font-family: inherit; font-size: 14px; cursor: pointer; }
+.btn-principal, .btn-secondaire, .btn-danger {
+  border-radius: 8px;
+  padding: 9px 16px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  transition: background 0.15s, border 0.15s;
+}
+.btn-principal { background: var(--primaire); color: #fff; }
+.btn-principal:hover { background: var(--primaire-fonce); }
+.btn-principal:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-secondaire { background: #fff; color: var(--texte); border-color: var(--bordure); }
+.btn-secondaire:hover { background: var(--fond); }
+.btn-danger { background: #fff; color: var(--danger); border-color: #f3c2c2; }
+.btn-danger:hover { background: #fef2f2; }
+.btn-petit { padding: 5px 10px; font-size: 13px; }
+
+.carte {
+  background: var(--carte);
+  border: 1px solid var(--bordure);
+  border-radius: var(--rayon);
+  box-shadow: var(--ombre);
+  padding: 20px;
+}
+.grille-cartes { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+.stat { text-align: left; }
+.stat .valeur { font-size: 32px; font-weight: 700; color: var(--primaire); }
+.stat .libelle { color: var(--texte-doux); font-size: 14px; }
+
+.tableau { width: 100%; border-collapse: collapse; background: var(--carte); }
+.tableau th, .tableau td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--bordure); }
+.tableau th { font-size: 13px; color: var(--texte-doux); text-transform: uppercase; letter-spacing: 0.3px; }
+.tableau tr:last-child td { border-bottom: none; }
+.tableau tbody tr:hover { background: var(--fond); }
+.cadre-tableau { border: 1px solid var(--bordure); border-radius: var(--rayon); overflow: hidden; box-shadow: var(--ombre); }
+
+label { display: block; font-weight: 500; font-size: 14px; margin-bottom: 12px; }
+input, select {
+  width: 100%;
+  margin-top: 5px;
+  padding: 9px 11px;
+  border: 1px solid var(--bordure);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #fff;
+}
+input:focus, select:focus { outline: 2px solid var(--primaire-clair); border-color: var(--primaire); }
+.ligne-champs { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.barre-outils { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 18px; }
+.barre-outils label { margin-bottom: 0; }
+
+.alerte { background: #fef2f2; color: var(--danger); border: 1px solid #f3c2c2; padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; font-size: 14px; }
+.info { background: var(--primaire-clair); color: var(--primaire-fonce); border: 1px solid #c7d2fe; padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; font-size: 14px; }
+.pastille { padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.pastille-verte { background: #ecfdf5; color: var(--succes); }
+.pastille-rouge { background: #fef2f2; color: var(--danger); }
+.pastille-grise { background: #f3f4f6; color: var(--texte-doux); }
+
+.entete-page { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+
+.page-connexion { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; background: linear-gradient(135deg, #eef2ff, #f5f6fa); }
+.carte-connexion { width: 380px; max-width: 100%; text-align: center; }
+.carte-connexion label { text-align: left; }
+.carte-connexion .btn-principal { width: 100%; margin-top: 6px; }
+.sous-titre { color: var(--texte-doux); margin: 4px 0 22px; }
+.comptes-demo { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--bordure); font-size: 13px; color: var(--texte-doux); display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap; }
+.comptes-demo button { background: var(--fond); border: 1px solid var(--bordure); border-radius: 6px; padding: 4px 10px; color: var(--texte); }
+.comptes-demo button:hover { background: var(--primaire-clair); }
+
+.fond-modale { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.45); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 20px; }
+.modale { background: var(--carte); border-radius: var(--rayon); padding: 24px; width: 460px; max-width: 100%; max-height: 90vh; overflow-y: auto; }
+.modale-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+
+.vide { text-align: center; color: var(--texte-doux); padding: 32px; }
+
+.actions { display: flex; gap: 6px; justify-content: flex-end; }
+small { color: var(--texte-doux); font-weight: 400; }
+.triable { cursor: pointer; user-select: none; }
+.triable:hover { color: var(--primaire); }
+
+.edt { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+.edt-jour { background: var(--carte); border: 1px solid var(--bordure); border-radius: var(--rayon); padding: 12px; }
+.edt-jour h3 { text-align: center; font-size: 14px; color: var(--texte-doux); border-bottom: 1px solid var(--bordure); padding-bottom: 8px; margin-bottom: 10px; }
+.edt-vide { text-align: center; color: var(--bordure); }
+.edt-seance { background: var(--primaire-clair); border-left: 3px solid var(--primaire); border-radius: 6px; padding: 8px; margin-bottom: 8px; }
+.edt-heure { font-weight: 600; color: var(--primaire-fonce); font-size: 13px; }
+.edt-cours { font-weight: 600; font-size: 14px; }
+.edt-info { color: var(--texte-doux); font-size: 12px; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { background: var(--primaire-clair); color: var(--primaire-fonce); padding: 3px 9px; border-radius: 6px; font-size: 13px; font-weight: 500; }
+.chip-clic { cursor: pointer; }
+.chip-clic:hover { background: #dde3ff; }
+.chip-grise { background: #f3f4f6; color: var(--texte-doux); }
+
+.deux-colonnes { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.catalogue { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.carte-cours { display: flex; flex-direction: column; }
+.titre-cours { font-size: 16px; font-weight: 600; }
+.carte-cours .meta { color: var(--texte-doux); font-size: 13px; margin: 6px 0; }
+.carte-cours .desc { font-size: 14px; flex: 1; margin: 8px 0; }
+.carte-cours .pied { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+
+@media (max-width: 800px) {
+  .deux-colonnes { grid-template-columns: 1fr; }
+  .edt { grid-template-columns: 1fr 1fr; }
+  .nav { display: none; }
+}
