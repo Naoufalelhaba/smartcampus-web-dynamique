@@ -1,9 +1,5 @@
 @echo off
-REM ====================================================================
-REM  SmartCampus - Creation de la base de donnees
-REM  Importe le schema puis les donnees de demonstration dans MySQL.
-REM  Prerequis : WAMP (MySQL) demarre.
-REM ====================================================================
+
 cd /d "%~dp0"
 
 set "MYSQL_EXE="
