@@ -1,17 +1,5 @@
 <?php
-// =====================================================================
-//  /seances.php — Emploi du temps (séances de cours)
-//      GET    /seances.php?promotion=ING2   -> EDT d'une promotion          [connecté]
-//      GET    /seances.php?idCours=1        -> séances d'un cours           [connecté]
-//      GET    /seances.php?idEnseignant=3   -> séances d'un enseignant      [connecté]
-//      GET    /seances.php                  -> EDT perso (étudiant/enseignant)
-//      POST   /seances.php                  -> ajouter une séance           [admin]  (+ détection de conflit)
-//      PUT    /seances.php?id=5             -> modifier une séance          [admin]  (+ détection de conflit)
-//      DELETE /seances.php?id=5             -> supprimer une séance         [admin]
-//
-//  Détection de conflit : deux séances se chevauchant le même jour sont en
-//  conflit si elles partagent la même salle, la même promotion, ou le même enseignant.
-// =====================================================================
+
 
 require_once __DIR__ . '/config/init.php';
 
@@ -38,8 +26,6 @@ switch ($_SERVER['REQUEST_METHOD']) {
     default:
         erreurJson('Méthode non autorisée.', 405);
 }
-
-// ---------------------------------------------------------------------
 function lireSeances(): void
 {
     $user         = exigerConnexion();
@@ -60,27 +46,23 @@ function lireSeances(): void
     if ($idCours !== null)    { $sql .= " AND s.idCours = ?";      $params[] = $idCours; }
     if ($idEnseignant !== null) { $sql .= " AND c.idEnseignant = ?"; $params[] = $idEnseignant; }
 
-    // Sans aucun filtre : on renvoie l'emploi du temps personnel.
     $aucunFiltre = ($promotion === '' && $idCours === null && $idEnseignant === null);
     if ($aucunFiltre && $user['role'] === 'etudiant') {
-        // séances des cours où l'étudiant est inscrit
+   
         $sql .= " AND s.idCours IN (SELECT idCours FROM Inscription WHERE idEtudiant = ?)";
         $params[] = (int) $user['idUser'];
     } elseif ($aucunFiltre && $user['role'] === 'enseignant') {
-        // séances des cours de l'enseignant
+       
         $sql .= " AND c.idEnseignant = ?";
         $params[] = (int) $user['idUser'];
     }
 
-    // Tri lisible : jours dans l'ordre de la semaine, puis par heure.
     $sql .= " ORDER BY FIELD(s.jour,'Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'), s.heureDebut";
 
     $req = db()->prepare($sql);
     $req->execute($params);
     repondreJson($req->fetchAll());
 }
-
-// ---------------------------------------------------------------------
 function creerSeance(): void
 {
     $v = validerSeance(corpsJson());
@@ -97,7 +79,7 @@ function creerSeance(): void
     repondreJson(['success' => true, 'idSeance' => (int) db()->lastInsertId()], 201);
 }
 
-// ---------------------------------------------------------------------
+
 function modifierSeance(int $id): void
 {
     $req = db()->prepare("SELECT idSeance FROM Seance WHERE idSeance = ?");
@@ -106,7 +88,6 @@ function modifierSeance(int $id): void
 
     $v = validerSeance(corpsJson());
 
-    // On exclut la séance courante de la recherche de conflit (sinon elle se gênerait elle-même).
     $conflit = trouverConflit($v['jour'], $v['heureDebut'], $v['heureFin'], $v['salle'],
                               $v['cours']['promotion'], $v['cours']['idEnseignant'], $id);
     if ($conflit) {
@@ -119,7 +100,6 @@ function modifierSeance(int $id): void
     repondreJson(['success' => true]);
 }
 
-// ---------------------------------------------------------------------
 function supprimerSeance(int $id): void
 {
     $req = db()->prepare("SELECT idSeance FROM Seance WHERE idSeance = ?");
@@ -131,8 +111,7 @@ function supprimerSeance(int $id): void
     repondreJson(['success' => true]);
 }
 
-// ---------------------------------------------------------------------
-// Validation des champs d'une séance + récupération du cours associé.
+
 function validerSeance(array $data): array
 {
     $idCours    = (int) ($data['idCours'] ?? 0);
@@ -170,9 +149,7 @@ function estHeureValide(string $h): bool
     return (bool) preg_match('/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/', $h);
 }
 
-// ---------------------------------------------------------------------
-// Cherche une séance en conflit. Renvoie la 1re trouvée, ou null.
-//   Chevauchement horaire : (debut1 < fin2) ET (debut2 < fin1).
+
 function trouverConflit(string $jour, string $heureDebut, string $heureFin, string $salle,
                         string $promotion, ?int $idEnseignant, ?int $idSeanceExclue): ?array
 {
@@ -199,7 +176,6 @@ function trouverConflit(string $jour, string $heureDebut, string $heureFin, stri
     return $req->fetch() ?: null;
 }
 
-// Construit un message de conflit clair selon la cause (salle / promotion / enseignant).
 function messageConflit(array $conflit, string $salle, string $promotion): string
 {
     $creneau = "le {$conflit['jour']} de " . substr($conflit['heureDebut'], 0, 5)
