@@ -1,12 +1,4 @@
 <?php
-// =====================================================================
-//  /enseignants.php — Gestion des enseignants (réservé à l'administrateur)
-//      GET    /enseignants.php          -> liste (avec nb de cours) + recherche
-//      GET    /enseignants.php?id=3     -> un enseignant + ses cours
-//      POST   /enseignants.php          -> créer un enseignant
-//      PUT    /enseignants.php?id=3     -> modifier un enseignant
-//      DELETE /enseignants.php?id=3     -> supprimer un enseignant
-// =====================================================================
 
 require_once __DIR__ . '/config/init.php';
 
@@ -34,12 +26,10 @@ switch ($methode) {
         erreurJson('Méthode non autorisée.', 405);
 }
 
-// ---------------------------------------------------------------------
 function listerEnseignants(): void
 {
     $recherche = trim($_GET['recherche'] ?? '');
 
-    // On compte au passage le nombre de cours dont chaque enseignant est responsable.
     $sql = "SELECT u.idUser, u.nom, u.prenom, u.email, COUNT(c.idCours) AS nbCours
             FROM Utilisateur u
             LEFT JOIN Cours c ON c.idEnseignant = u.idUser
@@ -58,7 +48,6 @@ function listerEnseignants(): void
     repondreJson($req->fetchAll());
 }
 
-// ---------------------------------------------------------------------
 function voirEnseignant(int $id): void
 {
     $req = db()->prepare(
@@ -69,7 +58,6 @@ function voirEnseignant(int $id): void
     $enseignant = $req->fetch();
     if (!$enseignant) erreurJson('Enseignant introuvable.', 404);
 
-    // Cours dont il est responsable (+ nombre d'inscrits).
     $req = db()->prepare(
         "SELECT c.idCours, c.nomCours, c.promotion, c.semestre, c.capaciteMax,
                 COUNT(i.idEtudiant) AS nbInscrits
@@ -85,7 +73,6 @@ function voirEnseignant(int $id): void
     repondreJson(['enseignant' => $enseignant, 'cours' => $cours]);
 }
 
-// ---------------------------------------------------------------------
 function creerEnseignant(): void
 {
     $data       = corpsJson();
@@ -114,7 +101,6 @@ function creerEnseignant(): void
     repondreJson(['success' => true, 'idUser' => (int) db()->lastInsertId()], 201);
 }
 
-// ---------------------------------------------------------------------
 function modifierEnseignant(int $id): void
 {
     $data = corpsJson();
@@ -146,15 +132,12 @@ function modifierEnseignant(int $id): void
     repondreJson(['success' => true]);
 }
 
-// ---------------------------------------------------------------------
 function supprimerEnseignant(int $id): void
 {
     $req = db()->prepare("SELECT idUser FROM Utilisateur WHERE idUser = ? AND role = 'enseignant'");
     $req->execute([$id]);
     if (!$req->fetch()) erreurJson('Enseignant introuvable.', 404);
 
-    // Les cours de cet enseignant ne sont PAS supprimés : idEnseignant passe à NULL
-    // (clause ON DELETE SET NULL) -> le cours reste, simplement sans enseignant.
     $req = db()->prepare("DELETE FROM Utilisateur WHERE idUser = ?");
     $req->execute([$id]);
 
