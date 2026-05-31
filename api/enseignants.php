@@ -6,6 +6,7 @@ exigerRole('admin');
 
 $methode = $_SERVER['REQUEST_METHOD'];
 $id      = isset($_GET['id']) ? (int) $_GET['id'] : null;
+//othy corrige ça 
 
 switch ($methode) {
     case 'GET':
