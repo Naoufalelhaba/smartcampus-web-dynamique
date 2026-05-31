@@ -1,14 +1,5 @@
 <?php
-// =====================================================================
-//  /notes.php — Gestion des notes
-//      GET    /notes.php?idCours=1            -> carnet de notes d'un cours (enseignant du cours / admin)
-//      GET    /notes.php?idEtudiant=9         -> résultats d'un étudiant (admin / l'étudiant lui-même)
-//      GET    /notes.php                      -> ses propres résultats (étudiant connecté)
-//      POST   /notes.php                      -> saisir une note (enseignant du cours / admin)
-//      POST   /notes.php?action=valider       -> valider+verrouiller les notes d'un cours
-//      PUT    /notes.php?id=5                 -> modifier une note (si non verrouillée)
-//      DELETE /notes.php?id=5                 -> supprimer une note (si non verrouillée)
-// =====================================================================
+
 
 require_once __DIR__ . '/config/init.php';
 
@@ -33,9 +24,6 @@ switch ($_SERVER['REQUEST_METHOD']) {
         erreurJson('Méthode non autorisée.', 405);
 }
 
-// ---------------------------------------------------------------------
-// Vérifie que l'utilisateur a le droit de gérer les notes d'un cours :
-// soit l'admin, soit l'enseignant responsable de CE cours. Renvoie le cours.
 function exigerAccesCours(int $idCours): array
 {
     $user = exigerConnexion();
@@ -50,7 +38,7 @@ function exigerAccesCours(int $idCours): array
     erreurJson('Vous ne pouvez gérer que les notes de vos propres cours.', 403);
 }
 
-// Un cours est "verrouillé" dès qu'au moins une de ses notes est validée.
+
 function coursEstVerrouille(int $idCours): bool
 {
     $req = db()->prepare("SELECT COUNT(*) AS n FROM Note WHERE idCours = ? AND verrouille = 1");
@@ -58,7 +46,6 @@ function coursEstVerrouille(int $idCours): bool
     return (int) $req->fetch()['n'] > 0;
 }
 
-// ---------------------------------------------------------------------
 function creerNote(): void
 {
     $data       = corpsJson();
@@ -70,7 +57,7 @@ function creerNote(): void
 
     if ($idCours <= 0 || $idEtudiant <= 0) erreurJson('idCours et idEtudiant requis.');
 
-    exigerAccesCours($idCours);   // existence du cours + droits (enseignant du cours / admin)
+    exigerAccesCours($idCours); 
 
     if (!in_array($type, ['CC1', 'CC2', 'TP', 'Projet', 'Examen'], true)) {
         erreurJson('Type d\'évaluation invalide.');
@@ -82,12 +69,10 @@ function creerNote(): void
         erreurJson('Coefficient invalide.');
     }
 
-    // L'étudiant doit être inscrit au cours.
     $req = db()->prepare("SELECT 1 FROM Inscription WHERE idEtudiant = ? AND idCours = ?");
     $req->execute([$idEtudiant, $idCours]);
     if (!$req->fetch()) erreurJson('Cet étudiant n\'est pas inscrit à ce cours.');
 
-    // Si le cours est déjà validé, on ne saisit plus de notes.
     if (coursEstVerrouille($idCours)) {
         erreurJson('Les notes de ce cours sont validées : la saisie est verrouillée.', 409);
     }
@@ -101,7 +86,7 @@ function creerNote(): void
     repondreJson(['success' => true, 'idNote' => (int) db()->lastInsertId()], 201);
 }
 
-// ---------------------------------------------------------------------
+
 function modifierNote(int $id): void
 {
     $req = db()->prepare("SELECT * FROM Note WHERE idNote = ?");
@@ -111,7 +96,6 @@ function modifierNote(int $id): void
 
     exigerAccesCours((int) $note['idCours']);
 
-    // Règle : une note validée ne peut plus être modifiée.
     if ((int) $note['verrouille'] === 1) {
         erreurJson('Cette note est validée : elle ne peut plus être modifiée.', 409);
     }
@@ -131,7 +115,6 @@ function modifierNote(int $id): void
     repondreJson(['success' => true]);
 }
 
-// ---------------------------------------------------------------------
 function supprimerNote(int $id): void
 {
     $req = db()->prepare("SELECT idCours, verrouille FROM Note WHERE idNote = ?");
@@ -148,8 +131,6 @@ function supprimerNote(int $id): void
     repondreJson(['success' => true]);
 }
 
-// ---------------------------------------------------------------------
-// Validation finale : verrouille toutes les notes d'un cours.
 function validerNotesCours(): void
 {
     $data = corpsJson();
@@ -163,8 +144,6 @@ function validerNotesCours(): void
 
     repondreJson(['success' => true, 'notesVerrouillees' => $req->rowCount()]);
 }
-
-// ---------------------------------------------------------------------
 function lireNotes(): void
 {
     $user       = exigerConnexion();
@@ -172,7 +151,7 @@ function lireNotes(): void
     $idEtudiant = isset($_GET['idEtudiant']) ? (int) $_GET['idEtudiant'] : null;
 
     if ($idCours !== null) {
-        exigerAccesCours($idCours);          // enseignant du cours / admin
+        exigerAccesCours($idCours);         
         carnetDeCours($idCours);
     } elseif ($idEtudiant !== null) {
         if ($user['role'] === 'etudiant' && (int) $user['idUser'] !== $idEtudiant) erreurJson('Accès interdit.', 403);
@@ -184,8 +163,7 @@ function lireNotes(): void
     }
 }
 
-// ---------------------------------------------------------------------
-// Carnet de notes d'un cours : étudiants inscrits, leurs notes, leur moyenne.
+
 function carnetDeCours(int $idCours): void
 {
     $req = db()->prepare("SELECT idCours, nomCours, promotion, semestre FROM Cours WHERE idCours = ?");
@@ -207,7 +185,6 @@ function carnetDeCours(int $idCours): void
     $req->execute([$idCours]);
     $notes = $req->fetchAll();
 
-    // On regroupe les notes par étudiant et on calcule la moyenne pondérée.
     $parEtudiant = [];
     foreach ($etudiants as $e) {
         $parEtudiant[$e['idUser']] = [
@@ -235,8 +212,7 @@ function carnetDeCours(int $idCours): void
     ]);
 }
 
-// ---------------------------------------------------------------------
-// Résultats d'un étudiant : cours suivis, notes par cours, moyennes, moyenne générale.
+
 function resultatsDEtudiant(int $idEtudiant): void
 {
     $req = db()->prepare("SELECT idUser, nom, prenom, email, promotion FROM Utilisateur WHERE idUser = ? AND role = 'etudiant'");
@@ -272,7 +248,6 @@ function resultatsDEtudiant(int $idEtudiant): void
         $coef[$cid]  = ($coef[$cid] ?? 0) + (float) $n['coefficient'];
     }
 
-    // Moyenne par cours + moyenne générale pondérée par les crédits.
     $sommeGen = 0.0; $creditsGen = 0;
     foreach ($parCours as $cid => &$c) {
         if (!empty($coef[$cid])) {
