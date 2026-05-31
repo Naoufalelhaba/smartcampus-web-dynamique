@@ -1,15 +1,5 @@
 <?php
-// =====================================================================
-//  /cours.php — Gestion des cours
-//      GET    /cours.php            -> liste (recherche + filtres + tri)   [tout utilisateur connecté]
-//      GET    /cours.php?id=1       -> détail d'un cours                    [tout utilisateur connecté]
-//      POST   /cours.php            -> créer un cours                       [admin]
-//      PUT    /cours.php?id=1       -> modifier un cours                    [admin]
-//      DELETE /cours.php?id=1       -> supprimer un cours                   [admin]
-//
-//  Lecture ouverte à tous les connectés : les étudiants ont besoin du
-//  catalogue pour s'inscrire. Écriture réservée à l'administrateur.
-// =====================================================================
+
 
 require_once __DIR__ . '/config/init.php';
 
@@ -39,7 +29,7 @@ switch ($methode) {
         erreurJson('Méthode non autorisée.', 405);
 }
 
-// ---------------------------------------------------------------------
+
 function listerCours(): void
 {
     $recherche   = trim($_GET['recherche'] ?? '');
@@ -47,9 +37,7 @@ function listerCours(): void
     $semestre    = trim($_GET['semestre'] ?? '');
     $departement = trim($_GET['departement'] ?? '');
 
-    // --- Tri SÉCURISÉ ---
-    // Un nom de colonne ne peut PAS être passé en paramètre préparé.
-    // On le valide donc contre une liste blanche : impossible d'injecter du SQL.
+  
     $colonnesTri = [
         'nom'         => 'c.nomCours',
         'promotion'   => 'c.promotion',
@@ -86,7 +74,7 @@ function listerCours(): void
     repondreJson($req->fetchAll());
 }
 
-// ---------------------------------------------------------------------
+
 function voirCours(int $id): void
 {
     $req = db()->prepare(
@@ -104,7 +92,7 @@ function voirCours(int $id): void
     repondreJson($cours);
 }
 
-// ---------------------------------------------------------------------
+
 function creerCours(): void
 {
     $champs = validerCours(corpsJson());
@@ -121,7 +109,6 @@ function creerCours(): void
     repondreJson(['success' => true, 'idCours' => (int) db()->lastInsertId()], 201);
 }
 
-// ---------------------------------------------------------------------
 function modifierCours(int $id): void
 {
     $req = db()->prepare("SELECT idCours FROM Cours WHERE idCours = ?");
@@ -144,23 +131,18 @@ function modifierCours(int $id): void
     repondreJson(['success' => true]);
 }
 
-// ---------------------------------------------------------------------
 function supprimerCours(int $id): void
 {
     $req = db()->prepare("SELECT idCours FROM Cours WHERE idCours = ?");
     $req->execute([$id]);
     if (!$req->fetch()) erreurJson('Cours introuvable.', 404);
 
-    // Inscriptions, notes et séances rattachées sont supprimées en cascade (ON DELETE CASCADE).
     $req = db()->prepare("DELETE FROM Cours WHERE idCours = ?");
     $req->execute([$id]);
 
     repondreJson(['success' => true]);
 }
 
-// ---------------------------------------------------------------------
-// Validation commune à la création et à la modification.
-// Renvoie un tableau de champs propres, ou stoppe avec une erreur 400.
 function validerCours(array $data): array
 {
     $nomCours    = trim($data['nomCours'] ?? '');
@@ -180,7 +162,6 @@ function validerCours(array $data): array
     if (!is_numeric($credits) || (int) $credits < 1 || (int) $credits > 30) erreurJson('Crédits invalides (1 à 30).');
     if (!is_numeric($capaciteMax) || (int) $capaciteMax < 1) erreurJson('Capacité invalide (au moins 1).');
 
-    // idEnseignant est optionnel ; s'il est fourni, il doit désigner un enseignant existant.
     if ($idEnseignant === null || $idEnseignant === '') {
         $idEnseignant = null;
     } else {
